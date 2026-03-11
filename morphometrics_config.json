@@ -1,0 +1,7 @@
+{
+  "random_state": 42,
+  "n_splits": 5,
+  "min_samples": 3,
+  "tune_voting": true,
+  "global_tune": true
+}

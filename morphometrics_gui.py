@@ -233,6 +233,11 @@ class MorphometricsGUI(QMainWindow):
             "Quolls": ("Quolls/raw_data/quolls_morphologika.txt", "quolls", True),
             "Wolves": ("Wolf/raw_data/wolf_morphologika.txt", "wolves", True),
             "Aariz": ("Aariz/raw_data/aariz_morphologika.txt", "aariz", True),
+            "TestData": (
+                "TestData/raw_data/test_data_morphologika.txt",
+                "testdata",
+                True,
+            ),
         }
 
         self.dataset_checkboxes = {}
