@@ -45,17 +45,27 @@ def show_upload_screen():
             st.error("No morphologika files uploaded")
 
         else:
+            errors = []
+            parsed_files = []
             # Loop through uploaded files
             for file in uploaded_files:
-                # Read file
-                content = file.read().decode("utf-8").splitlines()
+                try:
+                    content = file.read().decode("utf-8").splitlines()
+                    if not is_morphologika(content):
+                        errors.append(f"{file.name}: not a valid Morphologika file.")
+                    else:
+                        parsed_files.append(content)
+                except UnicodeDecodeError:
+                    errors.append(
+                        f"{file.name}: could not be read — ensure it is UTF-8 encoded."
+                    )
 
-                # Check if file is a valid morphologika file
-                if not is_morphologika(content):
-                    st.error(f"{file.name} is not a valid utf-8 morphologika file")
+            if errors:
+                for error in errors:
+                    st.error(error)
+                st.stop()
 
             # If all files are valid, proceed to classification
-            # TODO: why isnt the script interrupting when just one invalid file is uploaded with a valid one?
             st.session_state.files = uploaded_files
             st.session_state.screen = "running"
             st.rerun()
