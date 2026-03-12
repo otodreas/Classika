@@ -2,28 +2,7 @@
 
 import streamlit as st
 
-
-def is_morphologika(file: list[str]) -> bool:
-    # Instantiate dictionary with required headers as keys and False as values
-    required_headers = {
-        "[individuals]": False,
-        "[landmarks]": False,
-        "[dimensions]": False,
-        "[names]": False,
-        "[rawpoints]": False,
-    }
-
-    # Loop through lines
-    for line in file:
-        if line.strip() in required_headers.keys():
-            # Update dictionary value to True for the corresponding header
-            required_headers[line.strip()] = True
-            # Break if all required headers have been found
-            if all(required_headers.values()):
-                return True
-
-    # If not all required headers were found, return False
-    return False
+import src.validate as valid
 
 
 def upload():
@@ -51,7 +30,7 @@ def upload():
                 # Read file and check validity
                 try:
                     content = file.read().decode("utf-8").splitlines()
-                    if not is_morphologika(content):
+                    if not valid.is_morphologika(content):
                         errors.append(f"{file.name} is not a valid Morphologika file.")
 
                 # Throw unicode decode error if decoding fails
@@ -91,9 +70,6 @@ def running():
     if cancel:
         st.session_state.screen = "upload"
         st.rerun()
-    # import subprocess
-
-    # subprocess.run(["python3", "test_heartbeat.py"])
 
 
 def dashboard():

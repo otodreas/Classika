@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 
 
-def main():
+def hb():
     """Print a message every 5 seconds."""
     print("=" * 70)
     print("HEARTBEAT TEST - Printing message every 5 seconds")
@@ -29,7 +29,3 @@ def main():
         print("=" * 70)
         print(f"Heartbeat test stopped after {counter} messages")
         print("=" * 70)
-
-
-if __name__ == "__main__":
-    main()

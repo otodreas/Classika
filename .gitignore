@@ -1,10 +1,12 @@
-Materials/*
-!Materials/README.md
-!Materials/Materials.zip
-!Materials/scripts/
-!Materials/02_Advanced_Morphometric_Classification_outputs
-!Materials/run02.sh
+original_materials/*
+!original_materials/README.md
+!original_materials/Materials.zip
+!original_materials/scripts/
+!original_materials/02_Advanced_Morphometric_Classification_outputs/
+!original_materials/run02.sh
 
 .venv/
 
 **nohup.out
+
+**__pycache__/
