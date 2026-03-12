@@ -2,31 +2,61 @@
 
 import streamlit as st
 
+def is_morphologika(file: list[str]) -> bool:
+    # Instantiate dictionary with required headers as keys and False as values
+    required_headers = {
+        "[individuals]": False,
+        "[landmarks]": False,
+        "[dimensions]": False,
+        "[names]": False,
+        "[rawpoints]": False
+    }
+    
+    # Loop through lines
+    for line in file:
+        if line.strip() in required_headers.keys():
+            # Update dictionary value to True for the corresponding header
+            required_headers[line.strip()] = True
+
+            # Break if all required headers have been found
+            if all(required_headers.values()):
+                return True
+
+    # If not all required headers were found, return False
+    return False
+
 def show_upload_screen():
     st.title("Advanced Morphometric Classification")
 
     # File importer
-    staged_files = st.file_uploader(
+    uploaded_files = st.file_uploader(
         "Import morphologika data", type="txt", accept_multiple_files=True
     )
 
-    # Upload button
-    upload = st.button("Upload morphologika files")
+    # Classify button
+    classify = st.button("Classify morphologika files")
 
-    # Handle upload button click
-    if upload:
+    # Handle classify button click
+    if classify:
         # Check if any files were uploaded
-        if len(staged_files) == 0:
+        if len(uploaded_files) == 0:
             st.error("No morphologika files uploaded")
 
         else:
-            contents = []
-            st.session_state.files = staged_files
-            for file in st.session_state.files:
-                contents.append(file.read())
+            # Loop through uploaded files
+            for file in uploaded_files:
+                # Read file
+                content = file.read().decode("utf-8").splitlines()
                 
-            st.session_state.contents = contents
-            print(st.session_state.contents)
+                # Check if file is a valid morphologika file
+                if not is_morphologika(content):
+                    st.error(f"{file.name} is not a valid utf-8 morphologika file")
+
+            # If all files are valid, proceed to classification
+            # TODO: why isnt the script interrupting when just one invalid file is uploaded with a valid one?
+            st.session_state.files = uploaded_files
+            st.session_state.screen = "running"
+            st.rerun()
             
 
 def show_running_screen():
