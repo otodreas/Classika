@@ -1689,7 +1689,9 @@ def main(
         print(f"{'=' * 70}")
 
         # Process this dataset
-        result = analyze_dataset(name, path, dtype, OUTPUT_DIR)
+        result = analyze_dataset(
+            name, path, dtype, min_samples=min_samples, output_dir=OUTPUT_DIR
+        )
 
         if result:
             # Store minimal summary info
@@ -1845,7 +1847,9 @@ def main(
         print(f"  GLOBAL TUNING - BEST OVERALL MODEL ({best_overall_model})")
         print("=" * 70)
         if best_overall_model == "Weighted Voting":
-            best_overall_params = tune_global_weighted_voting(datasets)
+            best_overall_params = tune_global_weighted_voting(
+                datasets, min_samples=min_samples
+            )
             if best_overall_params:
                 print(
                     f"    Params: top_k={best_overall_params['top_k']}, "
@@ -1854,7 +1858,9 @@ def main(
                     f"cv_accuracy={best_overall_params['cv_accuracy']:.4f}"
                 )
         elif best_overall_model == "Blending":
-            best_overall_params = tune_global_blending(datasets)
+            best_overall_params = tune_global_blending(
+                datasets, min_samples=min_samples
+            )
             if best_overall_params:
                 print(
                     f"    Params: blend_holdout={best_overall_params['blend_holdout']}, "
@@ -1877,6 +1883,7 @@ def main(
                 dtype,
                 best_overall_model,
                 OUTPUT_DIR,
+                min_samples=min_samples,
                 best_model_params=best_overall_params,
             )
             if cm_data:
