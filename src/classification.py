@@ -29,7 +29,8 @@ ADVANCED FEATURE ENGINEERING (NO PCA!):
 FILTERS OUT RARE SPECIES (< 3 samples) including "Unknown"
 
 Author: Sara
-Date: 2025
+Modified for web app by: Oliver Todreas
+Date: 2026
 =============================================================================
 """
 
@@ -1588,7 +1589,7 @@ def analyze_dataset(name, filepath, dataset_type, output_dir):
 # =============================================================================
 
 
-def main():
+def main():  # TODO: filenames and parameters are arguments
     print("=" * 70)
     print("  02_ADVANCED MORPHOMETRIC CLASSIFICATION")
     print("  State-of-the-Art Ensemble Methods")

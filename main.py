@@ -1,17 +1,40 @@
 #!/usr/bin/env python
 
-import streamlit as st
+import os
+from pathlib import Path
 
-from src.test_heartbeat import hb
+import streamlit as st
+from sklearn.metrics import classification_report
+
+import src.classification as classification
 from src.validate import is_morphologika
 
 
 def upload():
     st.title("Advanced Morphometric Classification")
 
+    # Settings buttons
+    st.subheader("Model Parameters (leave as-is for defaults)")
+    set_random_state = st.checkbox("Set random seed", value=True)
+    if set_random_state:
+        st.session_state.random_state = st.number_input(
+            "Random seed", value=42, min_value=0
+        )
+    else:
+        st.session_state.random_state = None
+
+    st.session_state.test_size = st.slider(
+        "Test Size", min_value=0.1, max_value=0.5, value=0.25, step=0.05
+    )
+    st.session_state.min_samples = st.number_input(
+        "Minimum total samples per class", value=3, min_value=1
+    )
+    st.session_state.n_splits = st.number_input("CV folds", value=5, min_value=2)
+
     # File importer
+    st.subheader("Data importing")
     uploaded_files = st.file_uploader(
-        "Import Morphologika data", type="txt", accept_multiple_files=True
+        "Select Morphologika files", type="txt", accept_multiple_files=True
     )
 
     # Classify button
@@ -68,18 +91,33 @@ def upload():
 def running():
     st.title("Classifying morphologika data...")
 
-    # Initialize cancel flag if not already set
-    if "cancel_requested" not in st.session_state:
-        st.session_state.cancel_requested = False
+    classification.run(
+        st.session_state.files,
+        st.session_state.random_state,
+        st.session_state.test_size,
+        st.session_state.min_samples,
+        st.session_state.n_splits,
+    )
 
-    cancel = st.button("Cancel")
-    if cancel:
-        st.session_state.cancel_requested = True
-        st.session_state.screen = "upload"
-        st.rerun()
+    st.download_button(
+        label="Download results",
+        data=zip_buff.getvalue(),
+        file_name="morphometrics_results.zip",
+        mime="application/zip",
+    )
 
-    if not st.session_state.cancel_requested:
-        hb(st.session_state)
+    # # Initialize cancel flag if not already set
+    # if "cancel_requested" not in st.session_state:
+    #     st.session_state.cancel_requested = False
+
+    # cancel = st.button("Cancel")
+    # if cancel:
+    #     st.session_state.cancel_requested = True
+    #     st.session_state.screen = "upload"
+    #     st.rerun()
+
+    # if not st.session_state.cancel_requested:
+    #     hb(st.session_state)
 
 
 def dashboard():

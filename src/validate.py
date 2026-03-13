@@ -2,6 +2,16 @@
 
 
 def is_morphologika(file: list[str]) -> bool:
+    """
+    Validate a Morphologika file based on header presence.
+
+    Keyword arguments:
+    file -- a list of strings representing the lines of the file
+
+    Returns:
+    True if the file appears to be a valid Morphologika file, False otherwise.
+    """
+
     # Instantiate dictionary with required headers as keys and False as values
     required_headers = {
         "[individuals]": False,
