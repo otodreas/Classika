@@ -585,6 +585,7 @@ def get_base_models(n_classes):
     if HAS_CATBOOST:
         models["CatBoost"] = cb.CatBoostClassifier(
             iterations=200,
+            train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),  # OT
             depth=6,
             learning_rate=0.1,
             random_state=RANDOM_STATE,
@@ -687,6 +688,7 @@ def create_stacking_ensemble(n_classes):
                 "cb",
                 cb.CatBoostClassifier(
                     iterations=100,
+                    train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),  # OT
                     depth=5,
                     learning_rate=0.1,
                     random_state=RANDOM_STATE,
