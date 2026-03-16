@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import io
 import subprocess
 import tempfile
+import zipfile
 from pathlib import Path
 
 import streamlit as st
@@ -75,6 +77,7 @@ if classify:
                 input_dir.mkdir()
                 file_paths = []
                 for f in uploaded_files:
+                    f.seek(0)  # reset file pointer to beginning
                     p = input_dir / f.name
                     p.write_bytes(f.read())
                     file_paths.append(str(p))
@@ -112,12 +115,17 @@ if classify:
                     st.error(result.stderr)
                 else:
                     st.success("Done!")
-                    for output_file in output_dir.iterdir():
-                        st.download_button(
-                            label=f"Download {output_file.name}",
-                            data=output_file.read_bytes(),
-                            file_name=output_file.name,
-                        )
+                    zip_buffer = io.BytesIO()
+                    with zipfile.ZipFile(zip_buffer, "w") as zf:
+                        for output_file in output_dir.iterdir():
+                            zf.write(output_file, output_file.name)
+
+                    st.download_button(
+                        label="Download results",
+                        data=zip_buffer.getvalue(),
+                        file_name="results.zip",
+                        mime="application/zip",
+                    )
             finally:
                 if tmp_dir:
                     tmp_dir.cleanup()

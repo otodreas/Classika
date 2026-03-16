@@ -41,6 +41,7 @@ parse arguments
 import argparse  # OT
 import json
 import os
+import re  # OT
 import sys
 import time
 import warnings
@@ -277,61 +278,64 @@ def get_species(names, dataset_type):
     """Extract species labels"""
     species = []
     for name in names:
-        name_lower = name.lower().strip()
+        # name_lower = name.lower().strip()
 
-        if dataset_type == "canids":
-            # Classify by skull type (long/medium/short) instead of breed group
-            # We'll derive this from landmark measurements in the analysis function
-            # For now, keep original name - will be replaced with skull type
-            sp = name.strip()
-            if sp == "Non-":
-                sp = "Non-sporting"
-            species.append(sp)
-        elif dataset_type == "hominids":
-            # Classify by GENUS only (not species)
-            # Extract genus (first word): Gorilla, Pan, Homo
-            parts = name.split()
-            if len(parts) >= 1:
-                genus = parts[0]  # "Gorilla", "Pan", "Homo"
-                species.append(genus)
-            else:
-                species.append(name)
-        elif dataset_type == "papionins":
-            if "papio" in name_lower:
-                species.append("Papio")
-            elif "mandrillus" in name_lower:
-                species.append("Mandrillus")
-            elif "macaca" in name_lower:
-                species.append("Macaca")
-            elif "lophocebus" in name_lower and "albigena" in name_lower:
-                species.append("L. albigena")
-            elif "lophocebus" in name_lower and "aterrimus" in name_lower:
-                species.append("L. aterrimus")
-            elif "cercocebus" in name_lower:
-                species.append("Cercocebus")
-            else:
-                species.append(name.split()[0] if name.split() else name)
-        elif dataset_type == "bears":
-            # Morphologika names are "OTU_ID" e.g. Apennine_160, Scandinavia_42, Kamčatka_xxx
-            sp = name.split("_")[0] if "_" in name else name.strip()
-            species.append(sp)
-        elif dataset_type == "quolls":
-            # Names are "Population_MuseumID" e.g. Groote_NQG0001, mainland_CM01022
-            sp = name.split("_")[0] if "_" in name else name.strip()
-            species.append(sp)
-        elif dataset_type == "aariz":
-            # Names are "CVM-SX_ceph_id" — class is CVM stage (CVM-S1 .. CVM-S6)
-            sp = name.split("_")[0] if "_" in name else name.strip()
-            species.append(sp)
-        elif dataset_type == "wolves":
-            # groups_6: Region_temporal (Scandinavia_before, Finland_after, Fennoscandia_NAN, etc.)
-            parts = name.split("_")
-            sp = (
-                "_".join(parts[:2])
-                if len(parts) >= 2
-                else (parts[0] if parts else name.strip())
-            )
-            species.append(sp)
+        # if dataset_type == "canids":
+        #     # Classify by skull type (long/medium/short) instead of breed group
+        #     # We'll derive this from landmark measurements in the analysis function
+        #     # For now, keep original name - will be replaced with skull type
+        #     sp = name.strip()
+        #     if sp == "Non-":
+        #         sp = "Non-sporting"
+        #     species.append(sp)
+        # elif dataset_type == "hominids":
+        #     # Classify by GENUS only (not species)
+        #     # Extract genus (first word): Gorilla, Pan, Homo
+        #     parts = name.split()
+        #     if len(parts) >= 1:
+        #         genus = parts[0]  # "Gorilla", "Pan", "Homo"
+        #         species.append(genus)
+        #     else:
+        #         species.append(name)
+        # elif dataset_type == "papionins":
+        #     if "papio" in name_lower:
+        #         species.append("Papio")
+        #     elif "mandrillus" in name_lower:
+        #         species.append("Mandrillus")
+        #     elif "macaca" in name_lower:
+        #         species.append("Macaca")
+        #     elif "lophocebus" in name_lower and "albigena" in name_lower:
+        #         species.append("L. albigena")
+        #     elif "lophocebus" in name_lower and "aterrimus" in name_lower:
+        #         species.append("L. aterrimus")
+        #     elif "cercocebus" in name_lower:
+        #         species.append("Cercocebus")
+        #     else:
+        #         species.append(name.split()[0] if name.split() else name)
+        # elif dataset_type == "bears":
+        #     # Morphologika names are "OTU_ID" e.g. Apennine_160, Scandinavia_42, Kamčatka_xxx
+        #     sp = name.split("_")[0] if "_" in name else name.strip()
+        #     species.append(sp)
+        # elif dataset_type == "quolls":
+        #     # Names are "Population_MuseumID" e.g. Groote_NQG0001, mainland_CM01022
+        #     sp = name.split("_")[0] if "_" in name else name.strip()
+        #     species.append(sp)
+        # elif dataset_type == "aariz":
+        #     # Names are "CVM-SX_ceph_id" — class is CVM stage (CVM-S1 .. CVM-S6)
+        #     sp = name.split("_")[0] if "_" in name else name.strip()
+        #     species.append(sp)
+        # elif dataset_type == "wolves":
+        #     # groups_6: Region_temporal (Scandinavia_before, Finland_after, Fennoscandia_NAN, etc.)
+        #     parts = name.split("_")
+        #     sp = (
+        #         "_".join(parts[:2])
+        #         if len(parts) >= 2
+        #         else (parts[0] if parts else name.strip())
+        #     )
+        #     species.append(sp)
+
+        # Assume species names
+        species.append(re.split(r"[ _]", name)[0])
     return np.array(species)
 
 
