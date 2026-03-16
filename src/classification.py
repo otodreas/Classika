@@ -335,7 +335,7 @@ def get_species(names, dataset_type):
         #     species.append(sp)
 
         # Assume species names
-        species.append(re.split(r"[ _]", name)[0])
+        species.append("_".join(re.split(r"[ _]", name)[0:2]))
     return np.array(species)
 
 
