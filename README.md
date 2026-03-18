@@ -51,6 +51,8 @@ The user may select values for parameters
 ### Robust cancel button
 Since the process can be slow and resource intensive, it is important to be able to cancel the runs from the app UI if the user realizes that they have passed too many Morphologika files to the program, for instance.
 
+The classification script `src/classification.py` is identical to the original program wherever possible for consistency. To accomplish this, the classification is called as a script rather than a set of imported functions. Because it is called with `subprocess.Popen`, it can be terminated with the cancel button.
+
 ## Planned features
 
 ### Improve installation experience

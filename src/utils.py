@@ -81,9 +81,8 @@ def create_zip_buffer(output_dir: Path) -> bytes:
     with zipfile.ZipFile(zip_buffer, "w") as zf:
         # Loop through all files and directories in the output directory
         for output_file in output_dir.rglob("*"):
-            # Only write files to the ZIP archive
-            if output_file.is_file():  # TODO: do not return empty catboost directory
-                zf.write(output_file, output_file.relative_to(output_dir))
+            # Write outputs to the ZIP archive
+            zf.write(output_file, output_file.relative_to(output_dir))
 
     # Return the zipped bytes
     return zip_buffer.getvalue()
