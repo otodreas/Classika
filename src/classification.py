@@ -335,7 +335,10 @@ def get_species(names, dataset_type):
         #     species.append(sp)
 
         # Assume species names
-        species.append("_".join(re.split(r"[ _]", name)[0:2]))
+        parts = re.split(r"[ _]", name)
+        label = "_".join(parts[0:2])
+        label = label[0].upper() + label[1:]  # capitalise first letter
+        species.append(label)
     return np.array(species)
 
 
