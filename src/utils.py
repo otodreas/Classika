@@ -117,6 +117,7 @@ def start_classification(
             "--seed",
             str(seed),
         ],
-        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
         text=True,
     )

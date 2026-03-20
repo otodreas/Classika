@@ -12,14 +12,30 @@ st.title("Advanced Morphometric Classification")
 
 # If a classification process was started in a previous rerun, resume it
 if st.session_state.get("running"):
-    # Retrieve the classification process from the session state
+    # Retrieve the classification process and paths from session state
     process = st.session_state["process"]
+    output_dir = st.session_state["output_dir"]
+    log_path = output_dir / "run.log.txt"
 
-    # Assign empty status and cancel button placeholders
-    status = st.empty()
-    cancel = st.button("Cancel classification")
+    # Show status message and cancel button side by side
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        status = st.empty()
+    with col2:
+        cancel = st.button("Cancel")
 
-    # Handle cancellation of the classification process
+    # Show the last 5 lines of run.log.txt on each poll cycle
+    st.subheader("Process status...")
+    log_container = st.empty()
+
+    def read_log_tail(n=5):
+        """Read last n lines of log file if it exists."""
+        if log_path.exists():
+            lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
+            return "\n".join(lines[-n:])
+        return ""
+
+    # Rerun to return to start page if the cancel button is pressed
     if cancel:
         # Try to gracefully terminate the process
         process.terminate()
@@ -35,15 +51,13 @@ if st.session_state.get("running"):
 
         # Clean up temp files
         st.session_state["tmp_dir"].cleanup()
-        status.warning("Classification cancelled.")
-        st.stop()
+        st.rerun()
 
-    # If the process is still running, show a status message and rerun to poll again
+    # If the process is still running (there is no exit code), show the log tail and rerun to poll again
     if process.poll() is None:
         status.info("Classification running...")
-        time.sleep(0.5)
-
-        # Rerun the script to poll again on the next cycle
+        log_container.code(read_log_tail(), language=None)
+        time.sleep(1)
         st.rerun()
 
     # Process has returned an exit code
@@ -51,31 +65,27 @@ if st.session_state.get("running"):
         # Update session state to reflect the process has completed
         st.session_state["running"] = False
 
-        # Keep stderr output for error reporting
-        _, stderr = process.communicate()
-
-        # Assign temp dir and output dir from session state for cleanup and result zip download
+        # Assign temp directory from session state for cleanup and result zip download
         tmp_dir = st.session_state["tmp_dir"]
-        output_dir = st.session_state["output_dir"]
 
-        # Check if the exit code indicates an error
+        # Show final log tail
+        log_container.code(read_log_tail(), language=None)
+
         try:
             # If the exit code is non-zero, report the error
             if process.returncode != 0:
-                st.error(stderr)
-
-            # If the exit code is zero, the process completed successfully
+                remaining = process.stdout.read() if process.stdout else ""
+                status.error("Classification failed. See output above for details.")
+                if remaining:
+                    st.code(remaining, language=None)
             else:
-                status.success("Done!")
-
-                # Zip the output directory and offer it as a download
+                status.success("Classification complete")
                 st.download_button(
                     label="Download results",
                     data=create_zip_buffer(output_dir),
                     file_name="results.zip",
                     mime="application/zip",
                 )
-
         finally:
             # Always clean up temp files regardless of success or failure
             tmp_dir.cleanup()
@@ -112,7 +122,6 @@ else:
             if errors:
                 for error in errors:
                     st.error(error)
-
                 st.stop()
 
             # If there are no errors, proceed with classification
@@ -133,7 +142,7 @@ else:
                     # Ensure the file pointer is at the beginning of the file before reading
                     f.seek(0)
 
-                    # Build the path for the file in the tenporary input directory
+                    # Build the path for the file in the temporary input directory
                     p = input_dir / f.name
 
                     # Write the bytes of the files to disk
@@ -152,7 +161,7 @@ else:
                     seed=seed,
                 )
 
-                # Persist process and paths in session state to accomodate reruns
+                # Persist process and paths in session state to accommodate reruns
                 st.session_state["process"] = process
                 st.session_state["tmp_dir"] = tmp_dir
                 st.session_state["output_dir"] = output_dir
