@@ -105,7 +105,10 @@ else:
     min_samples = st.number_input(
         "Minimum total samples per class", value=3, min_value=1
     )
-    n_splits = st.number_input("CV folds", value=5, min_value=2)
+    n_splits = st.number_input("Number of data splits", value=5, min_value=2)
+    st.caption(
+        "How many times to split the data into training and testing sets. Higher = more reliable results but slower."
+    )
 
     # Show file importer
     st.subheader("Data importing")
