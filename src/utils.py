@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import io
+import json
 import os
 import subprocess
 import zipfile
+from datetime import datetime
 from pathlib import Path
 
 
@@ -130,9 +132,6 @@ def start_classification(
     Arguments are sourced from the UI, and the subprocess is started with the given arguments.
     """
     # Write all run parameters to a log file in the output directory before launching
-    import json
-    from datetime import datetime
-
     params = {
         "run_timestamp": datetime.now().isoformat(),
         "input_files": [os.path.basename(fp) for fp in file_paths],

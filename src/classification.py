@@ -30,11 +30,6 @@ FILTERS OUT RARE SPECIES (< 3 samples) including "Unknown"
 
 Author: Sara
 Date: 2025
-=============================================================================
-MODIFICATIONS FOR STREAMLIT APP COMPATABILITY
-=============================================================================
-
-parse arguments
 
 """
 

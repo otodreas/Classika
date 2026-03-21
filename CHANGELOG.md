@@ -6,10 +6,10 @@ All notable changes to this project following v1.0.6 will be documented in this 
 
 TODO:
 - Reproducibility fix: DONE
-- Parameter logging to output
+- Parameter logging to output: DONE
 - README rewrite
 - Progress streaming to UI: DONE
-- Advanced config panel
+- Advanced config panel: DONE
 - Screenshots for README
 
 ### Added
@@ -19,6 +19,10 @@ TODO:
 3. `amc.py`: Live log streaming during classification. Program polls `run.log.txt` every second and displays the last 5 lines in the UI
 4. `amc.py`: Cancel button now returns user to the start page immediately via `st.rerun()` instead of requiring a second interaction
 5. `amc.py`: Status indicators (running, complete, error) and a two-column layout for status and cancel button
+6. `amc.py`: Placed advanced settings (voting grids, model-specific parameters) in their own dropdowns
+7. `src/classification.py`: Added parsed arguments for all advanced settings
+8. `src/utils.py`: Added arguments to `start_classification()` to account for advanced settings
+9. `src/utils.py`: Update `start_classification()` to write all advanced model parameters to `run_parameters.json`
 
 ### Changed
 
@@ -28,6 +32,7 @@ TODO:
 4. `amc.py`: Changed parameter name in UI from "CV folds" to "Number of data splits" with a clarifying caption to help users understand that the parameter refers to a train/test split
 5. `amc.py`: Moved importer to the top of the UI and placed file importer and general settings in pre-expanded dropdowns to clean UI when classification is running
 6. `README.md`: Updated minimum Python version and confirmed that it works locally
+
 
 ### Removed
 
