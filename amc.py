@@ -8,7 +8,9 @@ import streamlit as st
 
 from src.utils import create_zip_buffer, start_classification, validate_uploaded_files
 
-st.title("Advanced Morphometric Classification")
+st.title("AMC")
+st.header("Advanced Morphometric Classification")
+st.subheader("Classify Morphologika files using machine learning")
 
 # If a classification process was started in a previous rerun, resume it
 if st.session_state.get("running"):
@@ -28,7 +30,7 @@ if st.session_state.get("running"):
     st.subheader("Process status...")
     log_container = st.empty()
 
-    def read_log_tail(n=5):
+    def read_log_tail(n=10):
         """Read last n lines of log file if it exists."""
         if log_path.exists():
             lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
