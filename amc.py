@@ -99,22 +99,22 @@ if st.session_state.get("running"):
 
 # Start a fresh classification if none is currently running
 else:
-    # Create settings buttons
-    st.subheader("Model Parameters (leave as-is for defaults)")
-    seed = st.number_input("Random seed", value=42, min_value=0)
-    min_samples = st.number_input(
-        "Minimum total samples per class", value=3, min_value=1
-    )
-    n_splits = st.number_input("Number of data splits", value=5, min_value=2)
-    st.caption(
-        "How many times to split the data into training and testing sets. Higher = more reliable results but slower."
-    )
-
     # Show file importer
-    st.subheader("Data importing")
-    uploaded_files = st.file_uploader(
-        "Select Morphologika files", type="txt", accept_multiple_files=True
-    )
+    with st.expander("Data importing", expanded=True):
+        uploaded_files = st.file_uploader(
+            "Select Morphologika files", type="txt", accept_multiple_files=True
+        )
+
+    # Create settings buttons
+    with st.expander("General settings", expanded=True):
+        seed = st.number_input("Random seed", value=42, min_value=0)
+        min_samples = st.number_input(
+            "Minimum total samples per class", value=3, min_value=1
+        )
+        n_splits = st.number_input("Number of data splits", value=5, min_value=2)
+        st.caption(
+            "How many times to split the data into training and testing sets. Higher = more reliable results but slower."
+        )
 
     # Classify button
     if st.button("Classify Morphologika files"):

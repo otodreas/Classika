@@ -23,8 +23,9 @@ TODO:
 
 - `amc.py`: Crash message reflects the time after which `src/classification.py` crashed.
 - `src/classification.py`: Arranged labels in alphabetical order in `get_species()` to ensure XGBoost and MLP produce identical results when the script is run standalone and with Streamlit
-- `src/utils.py`: Merged stderr into stdout in `start_classification()` (`stderr=subprocess.PIPE` -> `stdout=subprocess.PIPE, stderr=subprocess.STDOUT`) so all subprocess output flows through a single pipe and is captured in `run.log.txt`
+- `src/utils.py`: Merged stderr into stdout in `start_classification()` (`stderr=subprocess.PIPE` -> `stdout=subprocess.PIPE, stderr=subprocess.STDOUT`) so all subprocess output flows through a single pipe, accommodating `run.log.txt` to be streamed to the UI
 - `amc.py`: Changed parameter name in UI from "CV folds" to "Number of data splits" with a clarifying caption to help users understand that the parameter refers to a train/test split
+- `amc.py`: Moved importer to the top of the UI and placed file importer and general settings in pre-expanded dropdowns to clean UI when classification is running
 
 ### Removed
 
