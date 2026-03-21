@@ -38,17 +38,17 @@ parse arguments
 
 """
 
-import argparse  # OT
+import argparse
 import json
 import os
-import re  # OT
+import re
 import sys
 import time
 import warnings
 from collections import Counter
 from datetime import datetime
 from itertools import combinations
-from pathlib import Path  # OT
+from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -111,6 +111,45 @@ parser.add_argument("--files", nargs="+", type=str)  # list of Path objects
 parser.add_argument("--min_samples", type=int)
 parser.add_argument("--n_splits", type=int)
 parser.add_argument("--seed", type=int, default=None)
+
+# Ensemble tuning settings
+parser.add_argument("--tune_weighted_voting", type=int, default=1)  # 1=True, 0=False
+parser.add_argument("--voting_top_k_grid", type=str, default="3,4,5,6")
+parser.add_argument("--voting_weight_power_grid", type=str, default="0.5,1.0,2.0")
+parser.add_argument("--cv_folds_grid", type=str, default="5,7,10")
+parser.add_argument("--blend_holdout_grid", type=str, default="0.2,0.3,0.4")
+parser.add_argument("--blend_meta_c_grid", type=str, default="0.1,1.0,10.0")
+
+# XGBoost/LightGBM/CatBoost
+parser.add_argument("--boost_n_estimators", type=int, default=200)
+parser.add_argument("--boost_max_depth", type=int, default=6)
+parser.add_argument("--boost_learning_rate", type=float, default=0.1)
+
+# Random Forest/Extra Trees
+parser.add_argument("--rf_n_estimators", type=int, default=300)
+parser.add_argument("--rf_max_depth", type=int, default=0)  # 0 = None
+
+# Gradient Boosting (sklearn)
+parser.add_argument("--gb_n_estimators", type=int, default=150)
+parser.add_argument("--gb_max_depth", type=int, default=5)
+parser.add_argument("--gb_learning_rate", type=float, default=0.1)
+
+# MLP
+parser.add_argument("--mlp_layers", type=str, default="512,256,128,64")
+parser.add_argument("--mlp_alpha", type=float, default=0.001)
+parser.add_argument("--mlp_max_iter", type=int, default=500)
+
+# SVM
+parser.add_argument("--svm_c", type=float, default=10.0)
+
+# Logistic Regression
+parser.add_argument("--lr_c", type=float, default=1.0)
+
+# KNN
+parser.add_argument("--knn_n_neighbors", type=int, default=5)
+parser.add_argument(
+    "--knn_weights", type=str, default="distance", choices=["distance", "uniform"]
+)
 
 args = parser.parse_args()
 
@@ -212,13 +251,13 @@ TEST_SIZE = (
 )
 MIN_SAMPLES = args.min_samples  # Minimum total samples per class
 N_SPLITS = args.n_splits  # CV folds (was 10)
-TUNE_WEIGHTED_VOTING = True
-VOTING_TOP_K_GRID = [3, 4, 5, 6]
-VOTING_WEIGHT_POWER_GRID = [0.5, 1.0, 2.0]
+TUNE_WEIGHTED_VOTING = bool(args.tune_weighted_voting)
+VOTING_TOP_K_GRID = [int(x) for x in args.voting_top_k_grid.split(",")]
+VOTING_WEIGHT_POWER_GRID = [float(x) for x in args.voting_weight_power_grid.split(",")]
 GLOBAL_TUNE_WEIGHTED_VOTING = True
-CV_FOLDS_GRID = [5, 7, 10]
-BLEND_HOLDOUT_GRID = [0.2, 0.3, 0.4]
-BLEND_META_C_GRID = [0.1, 1.0, 10.0]
+CV_FOLDS_GRID = [int(x) for x in args.cv_folds_grid.split(",")]
+BLEND_HOLDOUT_GRID = [float(x) for x in args.blend_holdout_grid.split(",")]
+BLEND_META_C_GRID = [float(x) for x in args.blend_meta_c_grid.split(",")]
 
 np.random.seed(RANDOM_STATE)
 
@@ -560,12 +599,18 @@ def get_base_models(n_classes):
     """Get diverse base models for ensemble"""
     models = {}
 
-    # Gradient Boosting variants
+    # Resolve rf_max_depth: 0 = None (unlimited)
+    rf_max_depth = None if args.rf_max_depth == 0 else args.rf_max_depth
+
+    # Parse MLP layers from comma-separated string, filtering out zeros
+    mlp_layers = tuple(int(x) for x in args.mlp_layers.split(",") if int(x) > 0)
+
+    # Gradient Boosting variants (XGBoost / LightGBM / CatBoost)
     if HAS_XGBOOST:
         models["XGBoost"] = xgb.XGBClassifier(
-            n_estimators=200,
-            max_depth=6,
-            learning_rate=0.1,
+            n_estimators=args.boost_n_estimators,
+            max_depth=args.boost_max_depth,
+            learning_rate=args.boost_learning_rate,
             subsample=0.8,
             colsample_bytree=0.8,
             random_state=RANDOM_STATE,
@@ -576,9 +621,9 @@ def get_base_models(n_classes):
 
     if HAS_LIGHTGBM:
         models["LightGBM"] = lgb.LGBMClassifier(
-            n_estimators=200,
-            max_depth=6,
-            learning_rate=0.1,
+            n_estimators=args.boost_n_estimators,
+            max_depth=args.boost_max_depth,
+            learning_rate=args.boost_learning_rate,
             subsample=0.8,
             colsample_bytree=0.8,
             random_state=RANDOM_STATE,
@@ -588,34 +633,40 @@ def get_base_models(n_classes):
 
     if HAS_CATBOOST:
         models["CatBoost"] = cb.CatBoostClassifier(
-            iterations=200,
-            train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),  # OT
-            depth=6,
-            learning_rate=0.1,
+            iterations=args.boost_n_estimators,
+            train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),
+            depth=args.boost_max_depth,
+            learning_rate=args.boost_learning_rate,
             random_state=RANDOM_STATE,
             verbose=False,
         )
 
     # Tree-based
     models["RandomForest"] = RandomForestClassifier(
-        n_estimators=300,
-        max_depth=None,
+        n_estimators=args.rf_n_estimators,
+        max_depth=rf_max_depth,
         min_samples_split=2,
         random_state=RANDOM_STATE,
         n_jobs=-1,
     )
 
     models["ExtraTrees"] = ExtraTreesClassifier(
-        n_estimators=300, max_depth=None, random_state=RANDOM_STATE, n_jobs=-1
+        n_estimators=args.rf_n_estimators,
+        max_depth=rf_max_depth,
+        random_state=RANDOM_STATE,
+        n_jobs=-1,
     )
 
     models["GradientBoosting"] = GradientBoostingClassifier(
-        n_estimators=150, max_depth=5, learning_rate=0.1, random_state=RANDOM_STATE
+        n_estimators=args.gb_n_estimators,
+        max_depth=args.gb_max_depth,
+        learning_rate=args.gb_learning_rate,
+        random_state=RANDOM_STATE,
     )
 
     # Linear models
     models["LogisticRegression"] = LogisticRegression(
-        C=1.0, max_iter=2000, random_state=RANDOM_STATE, n_jobs=-1
+        C=args.lr_c, max_iter=2000, random_state=RANDOM_STATE, n_jobs=-1
     )
 
     if n_classes > 2:
@@ -623,25 +674,31 @@ def get_base_models(n_classes):
 
     # SVM
     models["SVM_RBF"] = SVC(
-        kernel="rbf", C=10, gamma="scale", probability=True, random_state=RANDOM_STATE
+        kernel="rbf",
+        C=args.svm_c,
+        gamma="scale",
+        probability=True,
+        random_state=RANDOM_STATE,
     )
 
     # Neural Network
     models["MLP"] = MLPClassifier(
-        hidden_layer_sizes=(512, 256, 128, 64),
+        hidden_layer_sizes=mlp_layers,
         activation="relu",
         solver="adam",
-        alpha=0.001,
+        alpha=args.mlp_alpha,
         batch_size=32,
         learning_rate_init=0.001,
-        max_iter=500,
+        max_iter=args.mlp_max_iter,
         random_state=RANDOM_STATE,
         early_stopping=True,
         validation_fraction=0.15,
     )
 
     # KNN
-    models["KNN"] = KNeighborsClassifier(n_neighbors=5, weights="distance", n_jobs=-1)
+    models["KNN"] = KNeighborsClassifier(
+        n_neighbors=args.knn_n_neighbors, weights=args.knn_weights, n_jobs=-1
+    )
 
     return models
 
@@ -692,7 +749,7 @@ def create_stacking_ensemble(n_classes):
                 "cb",
                 cb.CatBoostClassifier(
                     iterations=100,
-                    train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),  # OT
+                    train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),
                     depth=5,
                     learning_rate=0.1,
                     random_state=RANDOM_STATE,
@@ -1249,7 +1306,7 @@ def build_confusion_matrix_for_model(
     )
     plt.savefig(cm_filename, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close()
-    print(f"    [OK] Confusion matrix saved: {cm_filename}")
+    print(f"    [OK] Confusion matrix saved: {os.path.basename(cm_filename)}")
     print(
         f"    [OK] Overall Accuracy: {acc:.2f}% ({N_SPLITS}-fold CV, {len(y)} specimens)"
     )
@@ -1997,17 +2054,25 @@ def main():
         try:
             with open(tuned_path, "w", encoding="utf-8") as f:
                 json.dump(tuned_voting_params, f, indent=2)
-            print(f"\n  [OK] Tuned weighted voting params saved to: {tuned_path}")
+            print(
+                f"\n  [OK] Tuned weighted voting params saved to: {os.path.basename(tuned_path)}"
+            )
         except Exception as e:
             print(f"\n  [WARNING] Could not save tuned voting params: {e}")
 
-    print(f"\n  [OK] Results saved to: {excel_path}")
+    # Check if run parameters file exists
+    if os.path.isfile(os.path.join(OUTPUT_DIR, "run_parameters.json")):
+        print("\n  [OK] Model parameters saved to: run_parameters.json")
+    else:
+        print("\n [WARNING] Could not save model parameters")
+
+    print(f"\n  [OK] Results saved to: {os.path.basename(excel_path)}")
     print(f"    - Sheet 1: All_Results (all models for all datasets)")
     print(f"    - Sheet 2: Summary (dataset overview)")
     print(f"    - Sheet 3: Best_Models (best model per dataset)")
     if len(model_averages) > 0:
         print(f"    - Sheet 4: Best_Overall_Model (best model across all datasets)")
-    print(f"\n  All outputs saved to: {OUTPUT_DIR}/")
+    print(f"\n  All outputs saved")
     print(f"    - Excel file: Advanced_Classification_Results.xlsx")
     print(f"    - Confusion matrices: *_Confusion_Matrix.png")
 

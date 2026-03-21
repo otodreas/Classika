@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import io
+import os
 import subprocess
 import zipfile
 from pathlib import Path
@@ -94,11 +95,97 @@ def start_classification(
     min_samples: int,
     n_splits: int,
     seed: int,
+    # Ensemble tuning
+    tune_weighted_voting: int = 1,
+    voting_top_k_grid: str = "3,4,5,6",
+    voting_weight_power_grid: str = "0.5,1.0,2.0",
+    cv_folds_grid: str = "5,7,10",
+    blend_holdout_grid: str = "0.2,0.3,0.4",
+    blend_meta_c_grid: str = "0.1,1.0,10.0",
+    # XGBoost / LightGBM / CatBoost
+    boost_n_estimators: int = 200,
+    boost_max_depth: int = 6,
+    boost_learning_rate: float = 0.1,
+    # Random Forest / Extra Trees
+    rf_n_estimators: int = 300,
+    rf_max_depth: int = 0,
+    # Gradient Boosting (sklearn)
+    gb_n_estimators: int = 150,
+    gb_max_depth: int = 5,
+    gb_learning_rate: float = 0.1,
+    # MLP
+    mlp_layers: str = "512,256,128,64",
+    mlp_alpha: float = 0.001,
+    mlp_max_iter: int = 500,
+    # SVM
+    svm_c: float = 10.0,
+    # Logistic Regression
+    lr_c: float = 1.0,
+    # KNN
+    knn_n_neighbors: int = 5,
+    knn_weights: str = "distance",
 ) -> subprocess.Popen:
     """
     Launches the classification subprocess and returns the process handle.
     Arguments are sourced from the UI, and the subprocess is started with the given arguments.
     """
+    # Write all run parameters to a log file in the output directory before launching
+    import json
+    from datetime import datetime
+
+    params = {
+        "run_timestamp": datetime.now().isoformat(),
+        "input_files": [os.path.basename(fp) for fp in file_paths],
+        "general": {
+            "seed": seed,
+            "min_samples": min_samples,
+            "n_splits": n_splits,
+        },
+        "ensemble_tuning": {
+            "tune_weighted_voting": bool(tune_weighted_voting),
+            "voting_top_k_grid": voting_top_k_grid,
+            "voting_weight_power_grid": voting_weight_power_grid,
+            "cv_folds_grid": cv_folds_grid,
+            "blend_holdout_grid": blend_holdout_grid,
+            "blend_meta_c_grid": blend_meta_c_grid,
+        },
+        "model_hyperparameters": {
+            "XGBoost_LightGBM_CatBoost": {
+                "n_estimators": boost_n_estimators,
+                "max_depth": boost_max_depth,
+                "learning_rate": boost_learning_rate,
+            },
+            "RandomForest_ExtraTrees": {
+                "n_estimators": rf_n_estimators,
+                "max_depth": rf_max_depth if rf_max_depth != 0 else "unlimited",
+            },
+            "GradientBoosting": {
+                "n_estimators": gb_n_estimators,
+                "max_depth": gb_max_depth,
+                "learning_rate": gb_learning_rate,
+            },
+            "MLP": {
+                "layers": mlp_layers,
+                "alpha": mlp_alpha,
+                "max_iter": mlp_max_iter,
+            },
+            "SVM": {
+                "C": svm_c,
+            },
+            "LogisticRegression": {
+                "C": lr_c,
+            },
+            "KNN": {
+                "n_neighbors": knn_n_neighbors,
+                "weights": knn_weights,
+            },
+        },
+    }
+
+    params_path = output_dir / "run_parameters.json"
+    with open(params_path, "w", encoding="utf-8") as f:
+        json.dump(params, f, indent=2)
+
     return subprocess.Popen(
         [
             "python",
@@ -113,6 +200,48 @@ def start_classification(
             str(n_splits),
             "--seed",
             str(seed),
+            "--tune_weighted_voting",
+            str(tune_weighted_voting),
+            "--voting_top_k_grid",
+            voting_top_k_grid,
+            "--voting_weight_power_grid",
+            voting_weight_power_grid,
+            "--cv_folds_grid",
+            cv_folds_grid,
+            "--blend_holdout_grid",
+            blend_holdout_grid,
+            "--blend_meta_c_grid",
+            blend_meta_c_grid,
+            "--boost_n_estimators",
+            str(boost_n_estimators),
+            "--boost_max_depth",
+            str(boost_max_depth),
+            "--boost_learning_rate",
+            str(boost_learning_rate),
+            "--rf_n_estimators",
+            str(rf_n_estimators),
+            "--rf_max_depth",
+            str(rf_max_depth),
+            "--gb_n_estimators",
+            str(gb_n_estimators),
+            "--gb_max_depth",
+            str(gb_max_depth),
+            "--gb_learning_rate",
+            str(gb_learning_rate),
+            "--mlp_layers",
+            mlp_layers,
+            "--mlp_alpha",
+            str(mlp_alpha),
+            "--mlp_max_iter",
+            str(mlp_max_iter),
+            "--svm_c",
+            str(svm_c),
+            "--lr_c",
+            str(lr_c),
+            "--knn_n_neighbors",
+            str(knn_n_neighbors),
+            "--knn_weights",
+            knn_weights,
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
