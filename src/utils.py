@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import io
-import json
-import os
 import subprocess
 import zipfile
 from datetime import datetime
@@ -131,60 +129,6 @@ def start_classification(
     Launches the classification subprocess and returns the process handle.
     Arguments are sourced from the UI, and the subprocess is started with the given arguments.
     """
-    # Write all run parameters to a log file in the output directory before launching
-    params = {
-        "run_timestamp": datetime.now().isoformat(),
-        "input_files": [os.path.basename(fp) for fp in file_paths],
-        "general": {
-            "seed": seed,
-            "min_samples": min_samples,
-            "n_splits": n_splits,
-        },
-        "ensemble_tuning": {
-            "tune_weighted_voting": bool(tune_weighted_voting),
-            "voting_top_k_grid": voting_top_k_grid,
-            "voting_weight_power_grid": voting_weight_power_grid,
-            "cv_folds_grid": cv_folds_grid,
-            "blend_holdout_grid": blend_holdout_grid,
-            "blend_meta_c_grid": blend_meta_c_grid,
-        },
-        "model_hyperparameters": {
-            "XGBoost_LightGBM_CatBoost": {
-                "n_estimators": boost_n_estimators,
-                "max_depth": boost_max_depth,
-                "learning_rate": boost_learning_rate,
-            },
-            "RandomForest_ExtraTrees": {
-                "n_estimators": rf_n_estimators,
-                "max_depth": rf_max_depth if rf_max_depth != 0 else "unlimited",
-            },
-            "GradientBoosting": {
-                "n_estimators": gb_n_estimators,
-                "max_depth": gb_max_depth,
-                "learning_rate": gb_learning_rate,
-            },
-            "MLP": {
-                "layers": mlp_layers,
-                "alpha": mlp_alpha,
-                "max_iter": mlp_max_iter,
-            },
-            "SVM": {
-                "C": svm_c,
-            },
-            "LogisticRegression": {
-                "C": lr_c,
-            },
-            "KNN": {
-                "n_neighbors": knn_n_neighbors,
-                "weights": knn_weights,
-            },
-        },
-    }
-
-    params_path = output_dir / "run_parameters.json"
-    with open(params_path, "w", encoding="utf-8") as f:
-        json.dump(params, f, indent=2)
-
     return subprocess.Popen(
         [
             "python",

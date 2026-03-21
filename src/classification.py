@@ -155,6 +155,8 @@ args = parser.parse_args()
 # Output directory based on script name (under project root)
 # SCRIPT_NAME = os.path.splitext(os.path.basename(__file__))[0]
 OUTPUT_DIR = args.output_dir
+MISC_DIR = os.path.join(OUTPUT_DIR, "misc")
+
 datasets_filepaths = args.files
 datasets = []
 for f in datasets_filepaths:
@@ -174,6 +176,7 @@ print(datasets)
 # -----------------------------------------------------------------------------
 def setup_logging():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(MISC_DIR, exist_ok=True)
     log_path = os.path.join(OUTPUT_DIR, "run.log.txt")
 
     class Tee:
@@ -629,7 +632,7 @@ def get_base_models(n_classes):
     if HAS_CATBOOST:
         models["CatBoost"] = cb.CatBoostClassifier(
             iterations=args.boost_n_estimators,
-            train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),
+            train_dir=os.path.join(MISC_DIR, "catboost_info"),
             depth=args.boost_max_depth,
             learning_rate=args.boost_learning_rate,
             random_state=RANDOM_STATE,
@@ -744,7 +747,7 @@ def create_stacking_ensemble(n_classes):
                 "cb",
                 cb.CatBoostClassifier(
                     iterations=100,
-                    train_dir=os.path.join(OUTPUT_DIR, "catboost_info"),
+                    train_dir=os.path.join(MISC_DIR, "catboost_info"),
                     depth=5,
                     learning_rate=0.1,
                     random_state=RANDOM_STATE,
@@ -1972,19 +1975,78 @@ def main():
 
     # Final save with all sheets including best overall model
     with pd.ExcelWriter(excel_path, engine="openpyxl") as writer:
-        # Sheet 1: All results
+        # Sheet 1: Run parameters (first so it's the landing sheet when opening)
+        params_rows = [
+            {"Parameter": "run_timestamp", "Value": datetime.now().isoformat()},
+            {"Parameter": "seed", "Value": RANDOM_STATE},
+            {"Parameter": "min_samples", "Value": MIN_SAMPLES},
+            {"Parameter": "n_splits", "Value": N_SPLITS},
+            {
+                "Parameter": "input_files",
+                "Value": str([os.path.basename(f) for f in datasets_filepaths]),
+            },
+            {"Parameter": "tune_weighted_voting", "Value": TUNE_WEIGHTED_VOTING},
+            {"Parameter": "voting_top_k_grid", "Value": str(VOTING_TOP_K_GRID)},
+            {
+                "Parameter": "voting_weight_power_grid",
+                "Value": str(VOTING_WEIGHT_POWER_GRID),
+            },
+            {"Parameter": "cv_folds_grid", "Value": str(CV_FOLDS_GRID)},
+            {"Parameter": "blend_holdout_grid", "Value": str(BLEND_HOLDOUT_GRID)},
+            {"Parameter": "blend_meta_c_grid", "Value": str(BLEND_META_C_GRID)},
+            {"Parameter": "XGBoost.n_estimators", "Value": args.boost_n_estimators},
+            {"Parameter": "XGBoost.max_depth", "Value": args.boost_max_depth},
+            {"Parameter": "XGBoost.learning_rate", "Value": args.boost_learning_rate},
+            {"Parameter": "LightGBM.n_estimators", "Value": args.boost_n_estimators},
+            {"Parameter": "LightGBM.max_depth", "Value": args.boost_max_depth},
+            {"Parameter": "LightGBM.learning_rate", "Value": args.boost_learning_rate},
+            {"Parameter": "CatBoost.iterations", "Value": args.boost_n_estimators},
+            {"Parameter": "CatBoost.depth", "Value": args.boost_max_depth},
+            {"Parameter": "CatBoost.learning_rate", "Value": args.boost_learning_rate},
+            {"Parameter": "RandomForest.n_estimators", "Value": args.rf_n_estimators},
+            {
+                "Parameter": "RandomForest.max_depth",
+                "Value": args.rf_max_depth if args.rf_max_depth != 0 else "unlimited",
+            },
+            {"Parameter": "ExtraTrees.n_estimators", "Value": args.rf_n_estimators},
+            {
+                "Parameter": "ExtraTrees.max_depth",
+                "Value": args.rf_max_depth if args.rf_max_depth != 0 else "unlimited",
+            },
+            {
+                "Parameter": "GradientBoosting.n_estimators",
+                "Value": args.gb_n_estimators,
+            },
+            {"Parameter": "GradientBoosting.max_depth", "Value": args.gb_max_depth},
+            {
+                "Parameter": "GradientBoosting.learning_rate",
+                "Value": args.gb_learning_rate,
+            },
+            {"Parameter": "MLP.hidden_layer_sizes", "Value": args.mlp_layers},
+            {"Parameter": "MLP.alpha", "Value": args.mlp_alpha},
+            {"Parameter": "MLP.max_iter", "Value": args.mlp_max_iter},
+            {"Parameter": "SVM.C", "Value": args.svm_c},
+            {"Parameter": "LogisticRegression.C", "Value": args.lr_c},
+            {"Parameter": "KNN.n_neighbors", "Value": args.knn_n_neighbors},
+            {"Parameter": "KNN.weights", "Value": args.knn_weights},
+        ]
+        pd.DataFrame(params_rows).to_excel(
+            writer, sheet_name="Run_Parameters", index=False
+        )
+
+        # Sheet 2: All results
         results_df = pd.DataFrame(results_data)
         results_df.to_excel(writer, sheet_name="All_Results", index=False)
 
-        # Sheet 2: Summary by dataset
+        # Sheet 3: Summary by dataset
         summary_df = pd.DataFrame(summary_data)
         summary_df.to_excel(writer, sheet_name="Summary", index=False)
 
-        # Sheet 3: Best models comparison
+        # Sheet 4: Best models comparison
         best_models_df = pd.DataFrame(best_models_data)
         best_models_df.to_excel(writer, sheet_name="Best_Models", index=False)
 
-        # Sheet 4: Best model across all datasets
+        # Sheet 5: Best model across all datasets
         if len(model_averages) > 0:
             sorted_models = sorted(
                 model_averages.items(), key=lambda x: -x[1]["average"]
@@ -2007,7 +2069,7 @@ def main():
                 writer, sheet_name="Best_Overall_Model", index=False
             )
 
-        # Sheet 5: Tuned weighted voting params (if available)
+        # Sheet 6: Tuned weighted voting params (if available)
         if tuned_voting_params:
             tuned_rows = []
             for dataset_name, params in tuned_voting_params.items():
@@ -2028,7 +2090,7 @@ def main():
             tuned_df = pd.DataFrame(tuned_rows)
             tuned_df.to_excel(writer, sheet_name="Tuned_Weighted_Voting", index=False)
 
-        # Sheet 6: Tuned best overall model (if available)
+        # Sheet 7: Tuned best overall model (if available)
         if best_overall_model and best_overall_params:
             best_rows = [
                 {"Best_Overall_Model": best_overall_model, **best_overall_params}
@@ -2036,7 +2098,7 @@ def main():
             best_df = pd.DataFrame(best_rows)
             best_df.to_excel(writer, sheet_name="Tuned_Best_Overall_Model", index=False)
 
-        # Sheet 7+: Confusion matrices (best overall model)
+        # Sheet 8+: Confusion matrices (best overall model)
         for dataset_name, cm_data in confusion_matrices.items():
             labels = cm_data["labels"]
             cm_df = pd.DataFrame(cm_data["matrix"], index=labels, columns=labels)
@@ -2045,28 +2107,23 @@ def main():
 
     # Save tuned weighted voting params for reuse
     if tuned_voting_params:
-        tuned_path = os.path.join(OUTPUT_DIR, "weighted_voting_tuned_params.json")
+        tuned_path = os.path.join(MISC_DIR, "weighted_voting_tuned_params.json")
         try:
             with open(tuned_path, "w", encoding="utf-8") as f:
                 json.dump(tuned_voting_params, f, indent=2)
             print(
-                f"\n  [OK] Tuned weighted voting params saved to: {os.path.basename(tuned_path)}"
+                f"\n  [OK] Tuned weighted voting params saved to: {os.path.join('misc', os.path.basename(tuned_path))}"
             )
         except Exception as e:
             print(f"\n  [WARNING] Could not save tuned voting params: {e}")
 
-    # Check if run parameters file exists
-    if os.path.isfile(os.path.join(OUTPUT_DIR, "run_parameters.json")):
-        print("\n  [OK] Model parameters saved to: run_parameters.json")
-    else:
-        print("\n [WARNING] Could not save model parameters")
-
     print(f"\n  [OK] Results saved to: {os.path.basename(excel_path)}")
-    print(f"    - Sheet 1: All_Results (all models for all datasets)")
-    print(f"    - Sheet 2: Summary (dataset overview)")
-    print(f"    - Sheet 3: Best_Models (best model per dataset)")
+    print(f"    - Sheet 1: Run_Parameters (all settings used for this run)")
+    print(f"    - Sheet 2: All_Results (all models for all datasets)")
+    print(f"    - Sheet 3: Summary (dataset overview)")
+    print(f"    - Sheet 4: Best_Models (best model per dataset)")
     if len(model_averages) > 0:
-        print(f"    - Sheet 4: Best_Overall_Model (best model across all datasets)")
+        print(f"    - Sheet 5: Best_Overall_Model (best model across all datasets)")
     print(f"\n  All outputs saved")
     print(f"    - Excel file: Advanced_Classification_Results.xlsx")
     print(f"    - Confusion matrices: *_Confusion_Matrix.png")
