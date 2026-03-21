@@ -2,7 +2,7 @@
 Interactive morphometrics interface for Linux and Mac
 
 ## Requirements
-- Python>=3.14.2 TODO: ask Sara what python version she used
+- Python>=3.11
 - `requirements.txt`
   - ```pip install -r requirements_linux.txt``` OR ```pip install -r requirements_mac.txt```
 - MacOS:

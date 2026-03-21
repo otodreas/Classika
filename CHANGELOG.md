@@ -27,6 +27,7 @@ TODO:
 3. `src/utils.py`: Merged stderr into stdout in `start_classification()` (`stderr=subprocess.PIPE` -> `stdout=subprocess.PIPE, stderr=subprocess.STDOUT`) so all subprocess output flows through a single pipe, accommodating `run.log.txt` to be streamed to the UI
 4. `amc.py`: Changed parameter name in UI from "CV folds" to "Number of data splits" with a clarifying caption to help users understand that the parameter refers to a train/test split
 5. `amc.py`: Moved importer to the top of the UI and placed file importer and general settings in pre-expanded dropdowns to clean UI when classification is running
+6. `README.md`: Updated minimum Python version and confirmed that it works locally
 
 ### Removed
 
