@@ -1,132 +1,120 @@
-% SASYR 2025 - Template based on:
-% samplepaper.tex, a sample chapter demonstrating the
-% LLNCS macro package for Springer Computer Science proceedings;
-% Version 2.20 of 2017/10/04
-%
-\documentclass[runningheads]{llncs}
-%
-\usepackage[a4paper, total={6in, 8in}]{geometry}
+\documentclass[10pt,twocolumn]{article}
+
+% Packages 
+\usepackage[a4paper, top=2.5cm, bottom=2.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{lipsum}         % placeholder text — remove when writing
 \usepackage{graphicx}
-\usepackage{lipsum}
-\usepackage{url}
-% Used for displaying a sample figure. If possible, figure files should
-% be included in EPS format.
-%
-% If you use the hyperref package, please uncomment the following line
-% to display URLs in blue roman font according to Springer's eBook style:
-% \renewcommand\UrlFont{\color{blue}\rmfamily}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{booktabs}       % professional tables
+%\usepackage{microtype}      % better text justification
+\usepackage{authblk}        % multiple authors/affiliations
+\usepackage{abstract}       % controls abstract formatting
+\usepackage{titlesec}       % section heading formatting
+
+% Abstract spans full width
+\renewcommand{\abstractnamefont}{\normalfont\bfseries}
+\renewcommand{\abstracttextfont}{\normalfont\small}
+
+% Section heading style 
+\titleformat{\section}{\normalfont\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalfont\itshape}{\thesubsection.}{0.5em}{}
+
+% Hyperlink style
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+%%%%%%%%%%
+
+\title{\Large\textbf{Title of Application Note}}
+
+\author[1]{First Author}
+\author[1,2]{Second Author}
+\author[2]{Third Author}
+
+\affil[1]{Department, Institution, City, Country}
+\affil[2]{Department, Institution, City, Country}
+
+\date{}  % leave empty to suppress date
+
+%%%%%%%%%% 
 
 \begin{document}
-%
-\title{SASYR Paper Title}
-%
-%\titlerunning{Abbreviated paper title}
-% If the paper title is too long for the running head, you can set
-% an abbreviated paper title here
-%
-\author{First Author\inst{1}\orcidID{0000-1111-2222-3333} \and
-Second Author\inst{2,3}\orcidID{1111-2222-3333-4444} \and
-Third Author\inst{3}\orcidID{2222--3333-4444-5555}\and
-Fourth Author\inst{4}\orcidID{2222--3333-4444-5555}}
-%
-\authorrunning{F. Author et al.}
-% First names are abbreviated in the running head.
-% If there are more than two authors, 'et al.' is used.
-%
-\institute{ADiT-Lab, Instituto Politécnico de Viana do Castelo, IPVC, Portugal\\
-\email{author@ipvc.pt}\\
-\and
-CeDRI, Instituto Politécnico de Bragança, Portugal\\
-\email{author@ipb.pt}
-\and
-2AI, Instituto Politécnico do Cávado e do Ave, IPCA, Portugal\\
-\email{author@ipca.pt}
-\and
-GECAD, Instituto Politécnico do Porto, IPP, Portugal\\
-\email{author@ipp.pt}
-}
-%
-\maketitle              % typeset the header of the contribution
-%
-\begin{abstract}
-The authors can submit a Short Paper or a Full Paper in English.\\
-The abstract should summarize the contents of the paper in
-15--250 words.\\
-Further info is available on the SASYR Website at \url{http://sasyr.ipb.pt/}
 
+\twocolumn[{%
+    \maketitle
+    \begin{abstract}
+        This is the abstract, which spans the full width of the page above the
+        two-column body. It should be a concise summary of the motivation,
+        approach, and key result — typically 150--250 words for an application
+        note. Replace this text with your own.
+    \end{abstract}
+    \vspace{1em}
+}]
 
-\keywords{First keyword  \and Second keyword \and Another keyword.}
-\end{abstract}
-%
-%
-%
-\section{First Section}
-\subsection{A Subsection Sample}
-Please note that the first paragraph of a section or subsection is
-not indented. The first paragraph that follows a table, figure,
-equation etc. does not need an indent, either.
+% Body (two columns from here)
 
-Subsequent paragraphs, however, are indented.
+\section{Introduction}
 
-\subsubsection{Sample Heading (Third Level)} Only two levels of
-headings should be numbered. Lower-level headings remain unnumbered;
-they are formatted as run-in headings.
+\lipsum[1]  % replace with your text
 
-\paragraph{Sample Heading (Fourth Level)}
-The contribution should contain no more than four levels of
-headings. Table~\ref{tab1} gives a summary of all heading levels.
+\section{Implementation}
 
-\begin{table}
-\caption{Table captions should be placed above the
-tables.}\label{tab1}
-\begin{tabular}{|l|l|l|}
-\hline
-Heading level &  Example & Font size and style\\
-\hline
-Title (centered) &  {\Large\bfseries Lecture Notes} & 14 point, bold\\
-1st-level heading &  {\large\bfseries 1 Introduction} & 12 point, bold\\
-2nd-level heading & {\bfseries 2.1 Printing Area} & 10 point, bold\\
-3rd-level heading & {\bfseries Run-in Heading in Bold.} Text follows & 10 point, bold\\
-4th-level heading & {\itshape Lowest Level Heading.} Text follows & 10 point, italic\\
-\hline
-\end{tabular}
+\lipsum[2]
+
+\subsection{Subsection Example}
+
+\lipsum[3]
+
+% Figure example
+% \begin{figure}[ht]
+%     \centering
+%     \includegraphics[width=\columnwidth]{figures/example.png}
+%     \caption{Figure caption.}
+%     \label{fig:example}
+% \end{figure}
+
+\section{Results}
+
+\lipsum[4]
+
+% Table example
+\begin{table}[ht]
+    \centering
+    \caption{Example results table.}
+    \label{tab:results}
+    \begin{tabular}{lcc}
+        \toprule
+        Model & Accuracy & F1 \\
+        \midrule
+        Model A & 0.91 & 0.90 \\
+        Model B & 0.87 & 0.86 \\
+        \bottomrule
+    \end{tabular}
 \end{table}
 
+\section{Discussion}
 
-\noindent Displayed equations are centered and set on a separate
-line.
-\begin{equation}
-x + y = z
-\end{equation}
-Please try to avoid rasterized images for line-art diagrams and
-schemas. Whenever possible, use vector graphics instead (see
-Fig.~\ref{fig1}).
+\lipsum[5]
 
-\begin{figure}
-\includegraphics[width=\textwidth]{fig1.eps}
-\caption{A figure caption is always placed below the illustration.
-Please note that short captions are centered, while long ones are
-justified by the macro package automatically.} \label{fig1}
-\end{figure}
+\section{Conclusion}
 
-%
-% the environments 'definition', 'lemma', 'proposition', 'corollary',
-% 'remark', and 'example' are defined in the LLNCS documentclass as well.
-%
+\lipsum[6]
 
-For citations of references, use:
-In \cite{einstein} Einstein....
+\section*{Availability}
 
-In \cite{knuthwebsite} the authors
+Source code is available at \url{https://github.com/yourrepo}.
 
-This \cite{latexcompanion} is Latex. 
-%
-% ---- Bibliography ----
-%
-% BibTeX users should specify bibliography style 'splncs04'.
-% References will then be sorted and formatted in the correct style.
-%
-\bibliographystyle{refs-style}
-\bibliography{refs}
-%
+\section*{Acknowledgements}
+
+Acknowledgements go here.
+
+% References
+\bibliographystyle{plain}
+\bibliography{references}   % expects references.bib in the same directory
+
 \end{document}
