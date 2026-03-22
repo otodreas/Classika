@@ -114,6 +114,49 @@ results/
 - `input_filename_Confusion_Matrix_Best_Overall.png` is a confusion matrix that shows the performance of the best model. You will see one confusion matrix per Morphologika file uploaded
 - `misc/` is a folder that contains some advanced information, such as the weighted voting summary in `json` format and some automatically generated summary files that pertain to the catboost model
 
+## Classification methods
+
+### Feature engineering
+
+Instead of relying on PCA for dimensionality reduction of the data, Classika builds a feature matrix using a set of proprietary computed features. These features are computed from the 2D or 3D landmark coordinate data present in Morphologika files. These new features include
+- Pairwise distances (all combinations)
+- Interlandmark angles
+- Centroid-based features
+- Statistical moments (skewness, kurtosis)
+- Procrustes-free shape descriptors
+- Distance ratios (scale-invariant)
+- Bounding box features
+- Principal axes (eigenvalues) - NOT PCA, just shape descriptors
+
+### AI models
+
+Data is not split using typical train/test partitioning, but with stratified k-fold cross validation (CV). This ensures that the training and testing set resemble eachother in class proportions. The number of CV folds has a sizeable impact on runtime.
+
+Eleven AI models are trained to classify the data based on the new feature matrices in the process of a Classika run. These models are
+- Gradient boosting:
+  - XGBoost
+  - LightGMB
+  - CatBoost
+- Tree based:
+  - Random Forest
+  - Extra Trees
+  - Gradient boosting
+- Linear models:
+  - Logistic regression (aka LDA)
+  - Linear discriminant analysis
+- Support vector machine (aka SVM)
+- Multi-layer perceptron (aka neural network or MLP)
+- K-nearest neighbor classification
+
+The breadth of models allows for the strength of all models to be leveraged together. The process is outlined below.
+
+1. Every model is evaluated with stratified k-fold CV and gets a mean accuracy score
+2. The top k models are selected
+3. Each model's weight is proportional to its accuracy
+4. Each model produces a probability distribution over classes 
+5. These probability distributions are multiplied by each model's weight and summed
+6. The class with the highest weighted total probability wins
+
 ## Troubleshooting
 
 ### Data import fails
