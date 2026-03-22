@@ -2,7 +2,16 @@
 
 All notable changes to this project following v1.0.6 will be documented in this file
 
-## [v1.1.0] - 2026-03-23
+## [v1.1.1] - 2026-03-22
+
+### Added
+1. `test/`: A test dataset, along with instructions on how to reproduce the output, was added to help users when troubleshooting
+2. `docs/report/Classika_AppNote.pdf`: Include application note in repository
+
+### Modified
+1. `README.md`: Small fixes for style
+
+## [v1.1.0] - 2026-03-21
 
 AMC is now **Classika**
 
