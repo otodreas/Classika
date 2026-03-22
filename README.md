@@ -1,4 +1,4 @@
-# 🏴‍☠️ CLASSIKA
+# Classika
 
 ![Python](https://img.shields.io/badge/python-3.11-yellow)
 ![License](https://img.shields.io/badge/license-MIT-red)
@@ -23,7 +23,7 @@ brew install libomp
 Classika (*morphometric **classi**fication program for Morphologi**ka** files*) is a Streamlit-based local host app built around Sara Behnamian's ML framework for species classification from Morphologika data.
 
 It takes labeled Morphologika data as input, classifies specimens based on advanced morphological parameters using multiple ML algorithms, and returns statistics on those algorithms. Classika may be used to
-- Validate labels (if Classika fails to label your data correctly, it could be a red flag)
+- Validate labels (if Classika fails to label your data correctly, it could be a sign that the labels are incorrect)
 - Assess the quality of your dataset's raw-points coordinates
 - Explore machine learning algorithms that may be useful for you in the future
 
@@ -31,7 +31,7 @@ It takes labeled Morphologika data as input, classifies specimens based on advan
 1. Ensure Python is installed on the system
 2. Install the latest Classika release from GitHub
 3. Unzip the install and open a terminal inside the folder
-4. Create and activate viritual environment (recommended). The commands below should be run from the terminal, from the folder where 
+4. Create and activate virtual environment (recommended). The commands below should be run from the terminal, from the folder where 
 ```sh
 python -m venv .venv
 source .venv/bin/activate
@@ -118,7 +118,7 @@ results/
 
 ### Feature engineering
 
-Instead of relying on PCA for dimensionality reduction of the data, Classika builds a feature matrix using a set of proprietary computed features. These features are computed from the 2D or 3D landmark coordinate data present in Morphologika files. These new features include
+Instead of relying on PCA for dimensionality reduction of the data, Classika builds a feature matrix using a set of engineered features. These features are computed from the 2D or 3D landmark coordinate data present in Morphologika files. These new features include
 - Pairwise distances (all combinations)
 - Interlandmark angles
 - Centroid-based features
@@ -130,20 +130,20 @@ Instead of relying on PCA for dimensionality reduction of the data, Classika bui
 
 ### AI models
 
-Data is not split using typical train/test partitioning, but with stratified k-fold cross validation (CV). This ensures that the training and testing set resemble eachother in class proportions. The number of CV folds has a sizeable impact on runtime.
+Data is not split using typical train/test partitioning, but with stratified k-fold cross validation (CV). This ensures that the training and testing set resemble each other in class proportions. The number of CV folds has a large impact on runtime.
 
 Eleven AI models are trained to classify the data based on the new feature matrices in the process of a Classika run. These models are
 - Gradient boosting:
   - XGBoost
-  - LightGMB
+  - LightGBM
   - CatBoost
 - Tree based:
   - Random Forest
   - Extra Trees
   - Gradient boosting
 - Linear models:
-  - Logistic regression (aka LDA)
-  - Linear discriminant analysis
+  - Logistic regression
+  - Linear discriminant analysis (aka LDA)
 - Support vector machine (aka SVM)
 - Multi-layer perceptron (aka neural network or MLP)
 - K-nearest neighbor classification
@@ -177,13 +177,13 @@ Classika will not recognize the file as a Morphologika file
 
 Classification runs can take anywhere from under a minute to multiple hours or days. If analysis is running slow and you suspect the program is stuck, you can
 - Click "Cancel"
-- Under "General settings", set "Number of data splits" to 2. This is the lightest data partitioning setting and should allow for relatively quick runs (order of minutes) on single Morphologika files.
+- Under "General settings", set "Number of data splits" to 2. This is the lightest data partitioning setting and should allow for relatively quick runs (<10 minutes) on single Morphologika files.
 
 You can also try running the test dataset. In your install of Classika, you installed a folder called `test/`. Inside it are instructions on how to run the test set as well as the output you should expect.
 
 ### Unexpected results
 
-You might find you get unexpected results after a run. A potential culprit is incorrect partitioning of true classes in the data. A typical Morphologika file has a `[names]` section, where the classes in the data are laid out. It might look like
+You might find you get unexpected results after a run. A potential culprit is incorrect partitioning of true classes in the data. A typical Morphologika file has a `[names]` section, where the classes in the data presented. It might look like
 
 ```
 [names]
@@ -198,7 +198,7 @@ Macaca mulatta f80.246
 Macaca mulatta m10.10.19.5
 ```
 
-Classika assumes that the groups are defined with binomial nomenclature, split by a space or an underscore (i.e. `Homo Sapiens`, `homo_sapiens`, `H. Sapiens`, etc.). If this is not the case, your data will not be grouped properly.
+Classika assumes that the groups are defined with binomial nomenclature, split by a space or an underscore (i.e. `Homo Sapiens`, `homo_sapiens`, `H. Sapiens`). If this is not the case, your data will not be grouped properly.
 
 ## Development notes
 

@@ -8,7 +8,7 @@ import streamlit as st
 
 from src.utils import create_zip_buffer, start_classification, validate_uploaded_files
 
-st.title("🏴‍☠️ CLASSIKA")
+st.title("Classika")
 st.header(
     "Advanced morphometric classification from Morphologika files using machine learning"
 )
