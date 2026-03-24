@@ -10,6 +10,30 @@ Interactive morphometrics classification interface for Linux and Mac
 
 This file acts as a manual for Classika and is intended to be read top to bottom
 
+## Repository structure
+
+```
+.
+├── CHANGELOG.md
+├── classika.py
+├── docs/
+│   ├── images/
+│   └── report/
+│       └── Classika_AppNote.pdf
+├── LICENSE
+├── README.md
+├── requirements_linux.txt
+├── requirements_mac.txt
+├── src/
+│   ├── __pycache__
+│   ├── classification.py
+│   └── utils.py
+└── test/
+    ├── input
+    ├── output
+    └── README.md
+```
+
 ## Requirements
 - Python>=3.11
 - Required packages (see **Download and run** section)
