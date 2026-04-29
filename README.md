@@ -6,6 +6,8 @@
 ![Version](https://img.shields.io/github/v/release/otodreas/Classika)
 ![Last Commit](https://img.shields.io/github/last-commit/otodreas/Classika)
 
+CURRENTLY NOT BEING MAINTAINED AS OF 2026-04-29
+
 Interactive morphometrics classification interface for Linux and Mac
 
 This file acts as a manual for Classika and is intended to be read top to bottom
